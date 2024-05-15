@@ -1,3 +1,4 @@
+import os
 import speech_recognition as sr
 
 # def speech_recognize():
@@ -23,6 +24,8 @@ import speech_recognition as sr
 def speech_recognize(audio_file=None):
     recognizer = sr.Recognizer()
     if audio_file:
+        if not os.path.exists(audio_file) or os.path.getsize(audio_file) == 0:
+            return "Plik dźwiękowy jest pusty lub nie istnieje."
         with sr.AudioFile(audio_file) as source:
             audio = recognizer.record(source)
     else:
@@ -32,4 +35,13 @@ def speech_recognize(audio_file=None):
             recognizer.adjust_for_ambient_noise(source)
             audio = recognizer.listen(source)
 
-    # Reszta funkcji pozostaje bez zmian
+    try:
+        text = recognizer.recognize_google(audio, language='pl-PL')
+        print("Rozpoznano: " + text)
+        return text
+    except sr.UnknownValueError:
+        print("Nie udało się rozpoznać mowy.")
+        return None
+    except sr.RequestError as e:
+        print(f"Błąd serwisu; {e}")
+        return None
